@@ -1,0 +1,22 @@
+{
+  "name": "angular-auto-suggest",
+  "version": "0.0.0",
+  "homepage": "https://github.com/thetutlage/angular-auto-suggest",
+  "main": "auto-suggest.js",
+  "authors": [
+    "Harminder Virk <virk.officials@gmail.com>"
+  ],
+  "keywords": [
+    "angular-live-search",
+    "angular-auto-suggest",
+    "angular-search"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
