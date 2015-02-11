@@ -28,6 +28,13 @@ Angular auto suggest is a neat template less directive to make auto suggestions 
 
 ```
 
+```javascript
+
+// Inject angular.autosuggest here
+angular.module('yourApp',['angular.autosuggest']);
+
+```
+
 Above directive supports 3 parameters
 
 1. **search-url** : The url to call everytime a user tries to enter something.

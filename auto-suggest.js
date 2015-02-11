@@ -406,13 +406,27 @@
 			controller: ["$scope",function($scope){
 
 				this.updateTotalItems = function(index,item){
+
+					// Increase items count by one 
+					// Final call will make it equla to
+					// the total number of rendered items
 					$scope.autoSuggestItemsCount++;
+
+					// Saving reference to all items 
+					// and their indexes
 					$scope.autoSuggestItemsHash[index] = item;
+
 				};
 
 				this.activateIndex = function(index){
+
+					// exposed method to select indexed
+					// item and fire callback
+					// used by auto-suggest-item click handler
 					$scope.updateActiveIndex(index);
+
 					$scope.callback();
+
 				};
 			}],
 			link: function($scope, $element, $attr){
@@ -442,18 +456,28 @@
 				// user click or on enter pressed
 				$scope.callback = function(){
 
+					// Walks down the obj
+					function multiIndex(obj,is) {  // obj,['1','2','3'] -> ((obj['1'])['2'])['3']
+					    return is.length ? multiIndex(obj[is[0]],is.slice(1)) : obj
+					}
+
+					// Walks down the obj using string dot notation
+					function pathIndex(obj,is) {   // obj,'1.2.3' -> multiIndex(obj,['1','2','3'])
+					    return multiIndex(obj,is.split('.'))
+					}
+
 					// Grabbing item from index hash
 					var activeIndex = $scope.autoSuggestItemsHash[$scope.activeIndex];
 
-					// Grabbing callback function
-					var fun = $attr.searchSelectCallback;
+					// Grabbing callback function and converting 
+					// dot notation string to nested method
+					var fun = pathIndex($scope,$attr.searchSelectCallback);
 
 					// Calling callback function
-
-					if(typeof($scope[fun]) == 'function'){
+					if(typeof(fun) == 'function'){
 
 						// Run callback here
-						$scope[fun](activeIndex);
+						fun(activeIndex);
 
 					}else{
 
@@ -473,55 +497,59 @@
 
 				// Making http request using httpi
 				$scope.makeHttpRequest = function(){
-					// setting autoSuggest items count back to 0
-					$scope.autoSuggestItemsCount = 0;
 
-					// setting search status to initialized						
-					$scope.search.status = 'initialized';
+					// Running search query only when
+					// length is greater than zero
+					if($scope.search.query.length > 0){
+						// setting autoSuggest items count back to 0
+						$scope.autoSuggestItemsCount = 0;
 
-					// setting autoSuggest items hash
-					// back to empty object
-					$scope.autoSuggestItemsHash = {};
+						// setting search status to initialized						
+						$scope.search.status = 'initialized';
 
-					// Resetting activeIndex back to zero
-					$scope.activeIndex = 0;
+						// setting autoSuggest items hash
+						// back to empty object
+						$scope.autoSuggestItemsHash = {};
 
-					// Parameters to send on search query
-					var params = {};
+						// Resetting activeIndex back to zero
+						$scope.activeIndex = 0;
 
-					// If there are any pending requests
-					// Please abort them
-					if (pendingRequest){
-	      		pendingRequest.abort();
-	    		}
+						// Parameters to send on search query
+						var params = {};
 
-			    // Search search key parameter
-					params[$attr.searchQueryParameter] = $scope.search.query
+						// If there are any pending requests
+						// Please abort them
+						if (pendingRequest){
+		      				pendingRequest.abort();
+		    			}
 
-					// Preparing request
-					pendingRequest = httpi({
-						method: "get",
-						url: $attr.searchUrl,
-						params: params
-					});
+				    // Search search key parameter
+						params[$attr.searchQueryParameter] = $scope.search.query
 
-					// Getting data from pending request
-					pendingRequest.then(function(success){
-						$scope.response = success.data;
-					});
+						// Preparing request
+						pendingRequest = httpi({
+							method: "get",
+							url: $attr.searchUrl,
+							params: params
+						});
 
-					// Setting response back to empty
-					// object in case of error
-					pendingRequest.catch(function(){
-						$scope.response = {};
-					});
+						// Getting data from pending request
+						pendingRequest.then(function(success){
+							$scope.response = success.data;
+						});
 
-					pendingRequest.finally(function(){
+						// Setting response back to empty
+						// object in case of error
+						pendingRequest.catch(function(){
+							$scope.response = {};
+						});
 
-						// Setting search status to completed
-						$scope.search.status = 'completed';
-					});
+						pendingRequest.finally(function(){
 
+							// Setting search status to completed
+							$scope.search.status = 'completed';
+						});
+					}
 				};
 
 				// Bind keyup events to element
